@@ -1,5 +1,6 @@
-using namespace std;
 #include <iostream>
+using namespace std;
+
 class Nodo {
 public:
     int valor, x, y;
@@ -8,77 +9,128 @@ public:
 };
 
 class MatrizDispersa {
-public:
+private:
     Nodo* comienzo;
-    MatrizDispersa() : comienzo(nullptr) {}
+    int filasTotales;
+    int columnasTotales;
 
-    void insertar(int valor, int x, int y) {
-        Nodo* nuevo = new Nodo(valor, x, y);
-        if (!comienzo) {
-            comienzo = nuevo;
-        } else {
-            Nodo* actual = comienzo;
-            while (actual->siguiente) {
-                actual = actual->siguiente;
-            }
-            actual->siguiente = nuevo;
-        }
+public:
+    // el constructor a
+    MatrizDispersa(int filas, int columnas) {
+        comienzo = nullptr;
+        filasTotales = filas;
+        columnasTotales = columnas;
     }
-
-    int get(int x, int y);
-};
-
-void Agregar(MatrizDispersa& matriz , int valor , int x, int y){
-    Nodo* nuevo = new Nodo(valor, x, y);
-    if(matriz.comienzo == nullptr){
-        matriz.comienzo = nuevo;
-    } else {
-        Nodo* aux = matriz.comienzo;
-        while(aux->siguiente != nullptr){
+    //destructorr
+    ~MatrizDispersa() {
+        Nodo* aux = comienzo;
+        while (aux != nullptr) {
+            Nodo* temp = aux;
             aux = aux->siguiente;
+            delete temp;
         }
-        aux->siguiente = nuevo;
     }
-}
 
-int MatrizDispersa::get(int x,int y){
-    Nodo* aux = comienzo;
-    while(aux != nullptr){
-        if(aux->x == x && aux->y == y){
-            return aux->valor;
-        }
-        aux = aux->siguiente;
-    }
-    return 0; // si no se encuentra es 0
-}
-
-//me voy a wachiturrear no sabes nada que cansación
-void eliminar(int x,int y){
-    Nodo* aux=comienzo;
-    Nodo* anterior = nullptr;
-    while (aux != nullptr)
-    {
-        if (aux->x == x && aux->y == y)
-        {
-            if (anterior == nullptr) {
-                comienzo = aux->siguiente;
-            } else {
-                anterior->siguiente = aux->siguiente;
-            }
-            delete aux;
+    // poner el valor en un lugar de la matriz
+    void insertar(int valor, int x, int y) {
+        if (x >= filasTotales || y >= columnasTotales || x < 0 || y < 0) {
+            cout << "Posicion fuera de rango." << endl;
             return;
         }
-        anterior = aux;
-        aux = aux->siguiente;
+
+        // Si es un 0 no se toma lol
+        if (valor == 0) {
+            eliminar(x, y);
+            return;
+        }
+
+        Nodo* nuevo = new Nodo(valor, x, y);
+        nuevo->siguiente = comienzo;
+        comienzo = nuevo;
     }
-    
-}
-void mostrarValores(){
-    Nodo* aux=comienzo;
-    while (aux != nullptr)
-    {
-        cout<<"valor " <<aux->valor<< " en ( " << aux->x << ", " << aux->y << " )"<<endl;
-        aux = aux->siguiente;
+
+    // Obtener valor segun su posicion
+    int get(int x, int y) {
+        Nodo* aux = comienzo;
+        while (aux != nullptr) {
+            if (aux->x == x && aux->y == y) {
+                return aux->valor;
+            }
+            aux = aux->siguiente;
+        }
+        return 0; // si no esta es 0
     }
-    
-}
+
+    // eliminar valor de un nodo de la matriz 
+    void eliminar(int x, int y) {
+        Nodo* aux = comienzo;
+        Nodo* anterior = nullptr;
+        while (aux != nullptr) {
+            if (aux->x == x && aux->y == y) {
+                if (anterior == nullptr) {
+                    comienzo = aux->siguiente;
+                } else {
+                    anterior->siguiente = aux->siguiente;
+                }
+                delete aux;
+                return;
+            }
+            anterior = aux;
+            aux = aux->siguiente;
+        }
+    }
+
+    // los valores != 0
+    void mostrarValores() {
+        Nodo* aux = comienzo;
+        if (!aux) {
+            cout << "Matriz vacia." << endl;
+            return;
+        }
+        while (aux != nullptr) {
+            cout << "valor " << aux->valor
+                 << " en ( " << aux->x << ", " << aux->y << " )" << endl;
+            aux = aux->siguiente;
+        }
+    }
+
+    // Calcular la densidad ah
+    double calculaDensidad() {
+        int contador = 0;
+        Nodo* aux = comienzo;
+        while (aux != nullptr) {
+            contador++;
+            aux = aux->siguiente;
+        }
+        int totalPosiciones = filasTotales * columnasTotales;
+        return (double)contador / totalPosiciones;
+    }
+// Multiplicar con otra matriz
+    MatrizDispersa multiplicar(const MatrizDispersa& otra) {
+        if (columnasTotales != otra.filasTotales) {
+            cout << "No se pueden multiplicar: dimensiones incompatibles." << endl;
+            return MatrizDispersa(0, 0); 
+        }
+
+        MatrizDispersa resultado(filasTotales, otra.columnasTotales);
+
+        // Recorro todos los elementos de la primera matriz
+        Nodo* aux1 = comienzo;
+        while (aux1 != nullptr) {
+            // Recorro los elementos de la segunda matriz
+            Nodo* aux2 = otra.comienzo;
+            while (aux2 != nullptr) {
+                if (aux1->y == aux2->x) { 
+                    int suma = resultado.get(aux1->x, aux2->y);
+                    resultado.eliminar(aux1->x, aux2->y);
+                    resultado.insertar(suma + (aux1->valor * aux2->valor), aux1->x, aux2->y);
+                }
+                aux2 = aux2->siguiente;
+            }
+            aux1 = aux1->siguiente;
+        }
+
+        return resultado;
+    }
+   
+    };
