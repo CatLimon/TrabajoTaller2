@@ -1,3 +1,5 @@
+using namespace std;
+#include <iostream>
 class Nodo {
 public:
     int valor, x, y;
@@ -50,3 +52,33 @@ int MatrizDispersa::get(int x,int y){
     return 0; // si no se encuentra es 0
 }
 
+//me voy a wachiturrear no sabes nada que cansación
+void eliminar(int x,int y){
+    Nodo* aux=comienzo;
+    Nodo* anterior = nullptr;
+    while (aux != nullptr)
+    {
+        if (aux->x == x && aux->y == y)
+        {
+            if (anterior == nullptr) {
+                comienzo = aux->siguiente;
+            } else {
+                anterior->siguiente = aux->siguiente;
+            }
+            delete aux;
+            return;
+        }
+        anterior = aux;
+        aux = aux->siguiente;
+    }
+    
+}
+void mostrarValores(){
+    Nodo* aux=comienzo;
+    while (aux != nullptr)
+    {
+        cout<<"valor " <<aux->valor<< " en ( " << aux->x << ", " << aux->y << " )"<<endl;
+        aux = aux->siguiente;
+    }
+    
+}
